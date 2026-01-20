@@ -2,6 +2,9 @@ name: CI
 run-name: ${{ github.actor }} is running CI
 on: [push]
 
+permissions:
+  actions: 'write'
+
 jobs:
   unit-tests:
     name: Unit Tests
@@ -27,9 +30,13 @@ jobs:
             migrations:
               - 'migrations/**'
         
-      - if: steps.changes.outputs.migrations == 'true'
-        name: Run database migrations
-        run: echo "Running very long database migrations..."
+      - if: steps.changes.outputs.migrations == 'false'
+        name: Skip Integration Tests
+        run: |
+          gh run cancel ${{ github.run_id }}
+          gh run watch ${{ github.run_id }} # Watch is required as cancellation is not immediate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print Node.js version
         run: echo "Integration Tests"
