@@ -19,13 +19,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Run migrations
+      - name: Detect changes in migrations folder
         uses: dorny/paths-filter@v3
         id: changes
         with:
           filters: |
             migrations:
               - 'migrations/**'
+        
+      - if: steps.changes.outputs.migrations == 'true'
+        name: Run database migrations
+        run: echo "Running very long database migrations..."
 
       - name: Print Node.js version
         run: echo "Integration Tests"
